@@ -45,15 +45,15 @@ uint8_t tempsensor_init() {
 void tempsensor_write(uint8_t data) {
 	gpio_set_mode(P_REC, Output);  				// Set pin as output
 	for (int i = 0; i < 8; i++) {
-		if ((data & (1<<i))!=0) {   				// If the bit is high write 1
+		if ((data & (1<<i))!=0) {   			// If the bit is high write 1
 			gpio_set_mode(P_REC, Output);  		
-			gpio_set(P_REC, 0);  							// Pull pin low               
+			gpio_set(P_REC, 0);  			// Pull pin low               
 			delay_us(1); 
 			
 			gpio_set_mode(P_REC, Input);  		// Set pin as input
 			delay_us(60);  								
 		}
-		else { 															// If the bit is low write 0
+		else { 						// If the bit is low write 0
 			gpio_set_mode(P_REC, Output);
 			gpio_set(P_REC, 0);  						
 			delay_us(60);  
@@ -73,7 +73,7 @@ uint8_t tempsensor_read() {
 		delay_us(2);  										
 
 		gpio_set_mode(P_REC, Input);  		
-		if(gpio_get(P_REC)) {  							// If the pin is HIGH read = 1
+		if(gpio_get(P_REC)) {  				// If the pin is HIGH read = 1
 			value |= 1<<i;
 		}
 		delay_us(60); 
@@ -97,23 +97,23 @@ float calculate_avrg(Queue *q) {
 
 // Calculate distance and check
 void calculate_dist(char *rx_tmp, int temp, int avrg) {
-	int distance = 0;											// Re-initialize in every loop
+	int distance = 0;					// Re-initialize in every loop
 	int cycles = 0;												
 	float duration = 0.0f;
 	while(!(gpio_get(P_ECHO)));					
 	while(gpio_get(P_ECHO)) {
-		cycles += 33; 											// Check debugger 
+		cycles += 33; 					// Check debugger 
 	}
 	duration = (float) cycles / SystemCoreClock;
-	distance = duration * 170 * 100;   		// Measured distance in cm
+	distance = duration * 170 * 100;   			// Measured distance in cm
 	
 	if(distance < min_distance) {
-		lcd_print("Current oC:");						// Print current temperature
+		lcd_print("Current oC:");			// Print current temperature
 		sprintf(rx_tmp, " %i  ", (int)temp);
 		lcd_print(rx_tmp);
 		
 		lcd_set_cursor(0,1);
-		lcd_print("Average oC:");						// Print average temperature
+		lcd_print("Average oC:");			// Print average temperature
 		sprintf(rx_tmp, " %i  ", (int)avrg);				
 		lcd_print(rx_tmp);
 	}
@@ -123,7 +123,7 @@ void calculate_dist(char *rx_tmp, int temp, int avrg) {
 void check_tmp_dist(int temp) {
 	if(temp >= hot_temp) {
 		gpio_set(P_led_r, 1);
-		gpio_set(P_led_g, 1);						// A switch turns on (led in this case)
+		gpio_set(P_led_g, 1);				// A switch turns on (led in this case)
 		
 		lcd_clear();
 		lcd_set_cursor(0,0);
@@ -151,10 +151,10 @@ void check_tmp_dist(int temp) {
 int main() {
 	
 	// Variables
-	Queue rx_queue;												// Queue to hold data
+	Queue rx_queue;						// Queue to hold data
 	
-	char rx_tmp[16];											// Holds the string to be displayed
-	volatile uint8_t sres = 0, qres = 0;	// Sensor and queue response for debugging
+	char rx_tmp[16];					// Holds the string to be displayed
+	volatile uint8_t sres = 0, qres = 0;			// Sensor and queue response for debugging
 	uint8_t tmp_byte1, tmp_byte2, temp = 0;
 	volatile float avrg;
 	
@@ -193,13 +193,13 @@ int main() {
 			
 			sres = tempsensor_init();
 			delay_ms(1);
-			tempsensor_write(0xCC);  						// Skip ROM
-			tempsensor_write(0x44);  						// Convert t
+			tempsensor_write(0xCC);  		// Skip ROM
+			tempsensor_write(0x44);  		// Convert t
 			delay_ms(200);
 			
 			sres = tempsensor_init();
 			tempsensor_write(0xCC);  						
-			tempsensor_write(0xBE);  						// Read Scratch-pad
+			tempsensor_write(0xBE);  		// Read Scratch-pad
 		
 			tmp_byte1 = tempsensor_read();
 			tmp_byte2 = tempsensor_read();
@@ -209,7 +209,7 @@ int main() {
 			if(queue_is_full(&rx_queue)) {
 				__disable_irq();
 				avrg = calculate_avrg(&rx_queue);
-				rx_queue.tail = 0;								// Reset the queue to store temps for the next 2 minutes
+				rx_queue.tail = 0;			// Reset the queue to store temps for the next 2 minutes
 				qres = queue_enqueue(&rx_queue, temp); 	// Store the 1st value of next 2 minutes
 				
 				lcd_clear();

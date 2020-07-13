@@ -1,4 +1,4 @@
-# Smart-Thermostat
+# Simple Thermostat
 
 A simple thermostat created using an <b>STM32f401RE Nucleo</b> board and the following sensors:<br>
 <b>DS18B20 Temperature Sensor Module</b><br>
